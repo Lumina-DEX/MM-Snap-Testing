@@ -31,8 +31,9 @@ export const ethereum =
   typeof window !== "undefined" && (window as any)?.ethereum;
 
 export async function connect() {
-  if (!ethereum) return;
+  if (!ethereum) return 0;
   await ethereum.enable();
+  return 1;
 }
 
 export async function connectSnaps() {

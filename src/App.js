@@ -14,12 +14,13 @@ function App() {
   const [accessSnapAcc, setASA] = React.useState(0);
   const handleConnect = async () => {
     setCWF(1);
-    await connect();
+    let res = await connect();
+    if (!res) return;
     setCWF(2);
     setES(1);
     await connectSnaps();
     setES(2);
-    const res = await getSnapAccList();
+    res = await getSnapAccList();
     if (res) setASA(2);
     else {
       const accName = prompt("Please enter account name", "MyTestAccount");
