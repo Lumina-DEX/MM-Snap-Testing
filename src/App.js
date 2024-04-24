@@ -5,112 +5,98 @@ import {
   connect,
   connectSnaps,
   createSnapAcc,
-  getSnapAccInfo,
-  getSnapInfo,
+  getSnapAccList,
 } from "./test.ts";
 
-export function TestPage() {
-  const initialState = {};
-  const [currentInfo, setCurrentInfo] = React.useState(initialState);
-  const [infoType, setInfoType] = React.useState(0);
-  const [snapAccState, setSnapAccState] = React.useState(false);
-  const AccountInfoPanel = (props) => {
-    switch (props.type) {
-      case 5:
-        return (
-          <>
-            <div>Account Name: {props.info?.name}</div>
-            <div>Account Balance: {props.info?.balance?.total}</div>
-            <div>Account Address: {props.info?.publicKey}</div>
-          </>
-        );
-      case 4:
-        return <>In progress...</>;
-      case 3:
-        return (
-          <>
-            <div>Account Name: {props.info?.name}</div>
-            <div>Address: {props.info?.address}</div>
-          </>
-        );
-      case 2:
-        return (
-          <>
-            <div>Network Name: {props.info?.name}</div>
-            <div>Token name: {props.info?.token.name}</div>
-            <div>Token Symbol: {props.info?.token?.symbol}</div>
-            <div>Token Decimals: {props.info?.token?.decimals}</div>
-          </>
-        );
-      default:
-        break;
-    }
-    return <>Information goes here...</>;
-  };
-
-  const handleConnect = async () => {
-    setInfoType(4);
-    await connect();
-    setInfoType(1);
-  };
-  const handleSnapEnable = async () => {
-    setInfoType(4);
-    await connectSnaps();
-    setInfoType(1);
-  };
-  const handleSnapInfo = async () => {
-    setInfoType(4);
-    let result = await getSnapInfo();
-    setInfoType(2);
-    setCurrentInfo(result);
-  };
-  const handleCreateSnapAcc = async () => {
-    let accName = prompt("Please enter account name", "MyTestAccount");
-    if (accName === null) return;
-    setInfoType(4);
-    let result = await createSnapAcc(accName);
-    setInfoType(3);
-    setCurrentInfo(result);
-  };
-  const handleGetAccInfo = async () => {
-    setInfoType(4);
-    let result = await getSnapAccInfo();
-    if (!snapAccState) {
-      result = await getSnapAccInfo();
-      setSnapAccState(true);
-    }
-    console.log(result);
-    setInfoType(5);
-    setCurrentInfo(result);
-  };
-
-  return (
-    <>
-      This is test page
-      <div>
-        <button onClick={handleConnect}>Connect Wallet</button>
-      </div>
-      <div>
-        <button onClick={handleSnapEnable}>Enable Snaps</button>
-      </div>
-      <div>
-        <button onClick={handleSnapInfo}>Get Network Info</button>
-      </div>
-      <div>
-        <button onClick={handleCreateSnapAcc}>Create Snap Account</button>
-      </div>
-      <div>
-        <button onClick={handleGetAccInfo}>Get Snap Account Info</button>
-      </div>
-      <AccountInfoPanel info={currentInfo} type={infoType} />
-    </>
-  );
-}
-
 function App() {
+  const [connectWalletFlag, setCWF] = React.useState(0);
+  const [enableSnap, setES] = React.useState(0);
+  const [accessSnapAcc, setASA] = React.useState(0);
+  const handleConnect = async () => {
+    setCWF(1);
+    await connect();
+    setCWF(2);
+    setES(1);
+    await connectSnaps();
+    setES(2);
+    const res = await getSnapAccList();
+    if (res) setASA(2);
+    else {
+      const accName = prompt("Please enter account name", "MyTestAccount");
+      if (accName === null) return;
+      await createSnapAcc(accName);
+      setASA(2);
+    }
+  };
+
   return (
     <>
-      <TestPage />
+      <div className="drawer">
+        <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+        <div className="drawer-content">
+          {/* Page content here */}
+          <label htmlFor="my-drawer" className="btn btn-primary drawer-button">
+            Connect Wallet
+          </label>
+        </div>
+        <div className="drawer-side">
+          <label
+            htmlFor="my-drawer"
+            aria-label="close sidebar"
+            className="drawer-overlay"
+          ></label>
+          <ul className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+            <li>
+              <button className="btn">Connect Auro Wallet</button>
+            </li>
+            <li>
+              <button
+                className="btn"
+                onClick={() => {
+                  document.getElementById("my_modal_1").showModal();
+                  handleConnect();
+                }}
+              >
+                Connect Metamask
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <dialog id="my_modal_1" className="modal">
+        <div className="modal-box">
+          <ul className="steps steps-horizontal w-full">
+            <li className={`step ${connectWalletFlag ? "step-primary" : ""}`}>
+              {connectWalletFlag === 2
+                ? "Wallet Connected"
+                : connectWalletFlag === 1
+                ? "Connecting..."
+                : "Connect Wallet"}
+            </li>
+            <li className={`step ${enableSnap ? "step-primary" : ""}`}>
+              {enableSnap === 2
+                ? "Snap Enabled"
+                : enableSnap === 1
+                ? "Enabling..."
+                : "Enable Snap"}
+            </li>
+            <li className={`step ${accessSnapAcc ? "step-primary" : ""}`}>
+              {accessSnapAcc === 2
+                ? "Account Accessed"
+                : accessSnapAcc === 1
+                ? "Accessing..."
+                : "Access Snap Account"}
+            </li>
+          </ul>
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn">Close</button>
+            </form>
+          </div>
+        </div>
+      </dialog>
+      {/* <TestPage /> */}
     </>
   );
 }

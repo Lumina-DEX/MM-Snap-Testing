@@ -19,6 +19,14 @@ export type Account = {
   nonce?: string;
 };
 
+export type AccountListResult = {
+  name: string;
+  address: string;
+  index?: number;
+  balance?: { total: string };
+  isImported?: boolean;
+}[];
+
 export const ethereum =
   typeof window !== "undefined" && (window as any)?.ethereum;
 
@@ -28,15 +36,12 @@ export async function connect() {
 }
 
 export async function connectSnaps() {
-  ethereum
-    .request({
-      method: "wallet_requestSnaps",
-      params: {
-        "npm:mina-portal": {},
-      },
-    })
-    .then((res: Object) => console.log(res))
-    .catch((err: Object) => console.log(err));
+  await ethereum.request({
+    method: "wallet_requestSnaps",
+    params: {
+      "npm:mina-portal": {},
+    },
+  });
 }
 
 export async function getSnapInfo() {
@@ -68,15 +73,16 @@ export async function createSnapAcc(accountName: string) {
   return res;
 }
 
-export async function getSnapAccInfo() {
-  const res: Account = await ethereum.request({
+export async function getSnapAccList() {
+  const res = await ethereum.request({
     method: "wallet_invokeSnap",
     params: {
       snapId: "npm:mina-portal",
       request: {
-        method: "mina_accountInfo",
+        method: "mina_accountList",
       },
     },
   });
-  return res;
+  if (res.length < 2) return 0;
+  return 1;
 }
