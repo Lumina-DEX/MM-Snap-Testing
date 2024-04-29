@@ -5,13 +5,18 @@ import {
   connect,
   connectSnaps,
   createSnapAcc,
-  getSnapAccList,
+  checkSnapAccList,
+  getSnapAcc,
+  sendPayment,
 } from "./test.ts";
 
 function App() {
   const [connectWalletFlag, setCWF] = React.useState(0);
   const [enableSnap, setES] = React.useState(0);
   const [accessSnapAcc, setASA] = React.useState(0);
+  const [snapAcc, setSnapAcc] = React.useState();
+  const [receiveAddress, setRAddress] = React.useState("");
+  const [receiveAmount, setAmount] = React.useState(0);
   const handleConnect = async () => {
     setCWF(1);
     let res = await connect();
@@ -20,7 +25,7 @@ function App() {
     setES(1);
     await connectSnaps();
     setES(2);
-    res = await getSnapAccList();
+    res = await checkSnapAccList();
     if (res) setASA(2);
     else {
       const accName = prompt("Please enter account name", "MyTestAccount");
@@ -28,6 +33,11 @@ function App() {
       await createSnapAcc(accName);
       setASA(2);
     }
+    res = await getSnapAcc();
+    setSnapAcc(res);
+  };
+  const handleSend = async () => {
+    await sendPayment(receiveAddress, receiveAmount);
   };
 
   return (
@@ -64,6 +74,39 @@ function App() {
           </ul>
         </div>
       </div>
+      {snapAcc ? (
+        <div>
+          <div className="m-5">From: {snapAcc.address}</div>
+          <div className="m-5">
+            To:{" "}
+            <input
+              type="text"
+              placeholder="type address here"
+              value={receiveAddress}
+              onChange={(e) => setRAddress(e.target.value)}
+              className="input input-bordered w-full max-w-xs"
+            />
+          </div>
+          <div className="m-5">
+            Amount:{" "}
+            <input
+              type="text"
+              placeholder="type amount here"
+              value={receiveAmount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="input input-bordered w-full max-w-xs"
+            />
+          </div>
+          <div className="m-5">
+            Balance: {snapAcc.balance.total / 1000000000}
+          </div>
+          <button className="btn m-5" onClick={handleSend}>
+            Send
+          </button>
+        </div>
+      ) : (
+        <></>
+      )}
 
       <dialog id="my_modal_1" className="modal">
         <div className="modal-box">

@@ -45,7 +45,7 @@ export async function connectSnaps() {
   });
 }
 
-export async function getSnapInfo() {
+export async function getNetworkInfo() {
   const res = await ethereum.request({
     method: "wallet_invokeSnap",
     params: {
@@ -74,7 +74,7 @@ export async function createSnapAcc(accountName: string) {
   return res;
 }
 
-export async function getSnapAccList() {
+export async function checkSnapAccList() {
   const res = await ethereum.request({
     method: "wallet_invokeSnap",
     params: {
@@ -86,4 +86,40 @@ export async function getSnapAccList() {
   });
   if (res.length < 2) return 0;
   return 1;
+}
+
+export async function getSnapAcc() {
+  const res = await ethereum.request({
+    method: "wallet_invokeSnap",
+    params: {
+      snapId: "npm:mina-portal",
+      request: {
+        method: "mina_accountList",
+      },
+    },
+  });
+  return res[1];
+}
+
+export async function sendPayment(to, amount) {
+  const fee = 0.01,
+    memo = "",
+    nonce = 0;
+  const res = await ethereum.request({
+    method: "wallet_invokeSnap",
+    params: {
+      snapId: "npm:mina-portal",
+      request: {
+        method: "mina_sendPayment",
+        params: {
+          to,
+          amount,
+          fee,
+          memo,
+          nonce,
+        },
+      },
+    },
+  });
+  console.log(res);
 }
